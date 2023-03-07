@@ -61,7 +61,7 @@ def convert_features(tokenizer, data):
         for idx in range(bs)
     ]
     features["targets"] = [
-        answer_choices_texts[idx].index(t) if t else -1
+        answer_choices_texts[idx].index(t) if t in answer_choices_texts[idx]  else -1
         for idx, t in enumerate(target_texts)
     ]
     return features
@@ -75,9 +75,9 @@ def get_example_data():
     answer_choices_texts = [
         ["rose flower", "ink", "charcoal", "fruit", "shoe"],
         ["monkey", "basketball", "fishing pole", "comet asdf", "needle"],
-        ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair.", "placeholder", "placeholder 2"],
+        ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair."],
     ]
-    target_texts = ["charcoal", "needle", "A boy sits on a chair and read a book."] # optional 
+    target_texts = ["charcoal", "N/A", "A boy sits on a chair and read a book."] # optional 
     
     data = []
     for i in range(len(input_texts)):

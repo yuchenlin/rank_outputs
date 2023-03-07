@@ -109,7 +109,7 @@ class DecoderModel(ModelBase):
         masked_log_probs = batch["labels_attention_mask"].unsqueeze(-1) * torch.log_softmax(logits, dim=-1)
         seq_token_log_probs = torch.gather(masked_log_probs, -1, batch["labels"].unsqueeze(-1))
         seq_log_prob = seq_token_log_probs.squeeze(dim=-1).sum(dim=-1)
-        seq_log_prob = seq_log_prob.view(batch["targets"].size(0),
+        seq_log_prob = seq_log_prob.view(batch["labels"].size(0),
                                          -1)  # TODO(Victor): this reshapes works based on the assumption that all examples have the same number of choices. the pre-processing doesn't make this assumption.
         predictions = seq_log_prob.argmax(dim=-1)
         return predictions
