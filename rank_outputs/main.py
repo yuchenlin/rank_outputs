@@ -75,7 +75,8 @@ def get_example_data():
     answer_choices_texts = [
         ["rose flower", "ink", "charcoal", "fruit", "shoe"],
         ["monkey", "basketball", "fishing pole", "comet asdf", "needle"],
-        ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair."],
+        ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair."], # "placeholder", "placeholder 1"] 
+                        # if the number of choices is different, please either use bsz=1 or add some placeholders to make them the same 
     ]
     target_texts = ["charcoal", "N/A", "A boy sits on a chair and read a book."] # optional 
     
