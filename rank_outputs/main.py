@@ -79,20 +79,25 @@ def get_example_data():
     ]
     target_texts = ["charcoal", "needle", "A boy sits on a chair and read a book."] # optional 
     
-    return {"input_texts": input_texts, "answer_choices_texts": answer_choices_texts, "target_texts": target_texts}
+    data = []
+    for i in range(len(input_texts)):
+        item = {"input_texts": [input_texts[i]], "answer_choices_texts": [answer_choices_texts[i]], "target_texts": [target_texts[i]]}
+        data.append(item)
+    return data
 
 def main():
     model, tokenizer = init_model("google/flan-t5-small")
     data = get_example_data()
 
     
-    features = convert_features(tokenizer, data)
+    features = [convert_features(tokenizer, item) for item in data]
+
     # print(len(features["input_ids"]), len(features["labels"]))
     
     data_collator = DataCollatorForMultipleChoice(
                 tokenizer, pad_to_multiple_of=None, padding=True, max_length=64
                 )
-    eval_dataloader = DataLoader([features], collate_fn=data_collator, batch_size=1)
+    eval_dataloader = DataLoader(features, collate_fn=data_collator, batch_size=1)
     model.eval()
 
     # features = [features]
@@ -102,11 +107,12 @@ def main():
         # for k, v in batch.items():
         #     print(k, v.shape)
         batch = {
-            k: v.view(v.shape[0]*v.shape[1], v.shape[2]) if k!="targets" else v.view(v.shape[1])
+            k: v.view(v.shape[0]*v.shape[1], v.shape[2]) if k!="targets" else v
             for k, v in batch.items()
         }
         with torch.no_grad():
             predictions, seq_log_prob = model(batch)
             print(predictions) 
+            print(seq_log_prob)
 
 main()
