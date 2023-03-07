@@ -149,6 +149,7 @@ class DataCollatorForMultipleChoice:
 
     def __call__(self, features):
         num_choices = len(features[0]["input_ids"])
+        # print(num_choices)
         flattened_features = [
             [
                 {
@@ -179,6 +180,13 @@ class DataCollatorForMultipleChoice:
             m + [0]*(max_label_length - len(m))
             for m in [elem["labels_attention_mask"] for elem in flattened_features]
         ]
+
+        # for k, v in batch.items():
+        #     print(k)
+        #     print(len(v))
+        #     print(v)
+        #     v = torch.tensor(v)
+        #     print("----")
 
         # Convert to tensors
         batch = {

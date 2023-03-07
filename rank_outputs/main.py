@@ -20,7 +20,7 @@ def convert_features(tokenizer, data):
     input_texts = data["input_texts"]
     answer_choices_texts = data["answer_choices_texts"]
     target_texts = data["target_texts"]
-    bs = 1
+    bs = len(input_texts)
     padding = "max_length" 
     max_length = 64
     
@@ -34,13 +34,13 @@ def convert_features(tokenizer, data):
 
     tokenized_targets = [
         tokenizer(
-            option,
+            options,
             # padding is on the right here.
-            padding=True,
+            padding=padding,
             max_length=max_length,
             truncation=True,
         )
-        for option in answer_choices_texts
+        for options in answer_choices_texts
     ]
     
 
@@ -61,7 +61,7 @@ def convert_features(tokenizer, data):
         for idx in range(bs)
     ]
     features["targets"] = [
-        answer_choices_texts[idx].index(t)
+        answer_choices_texts[idx].index(t) if t else -1
         for idx, t in enumerate(target_texts)
     ]
     return features
@@ -74,18 +74,20 @@ def get_example_data():
     ]    
     answer_choices_texts = [
         ["rose flower", "ink", "charcoal", "fruit", "shoe"],
-        ["monkey", "basketball", "fishing pole", "comet", "needle"],
-        ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair."],
+        ["monkey", "basketball", "fishing pole", "comet asdf", "needle"],
+        ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair.", "placeholder", "placeholder 2"],
     ]
-    truths = [] # optional 
+    target_texts = ["charcoal", "needle", "A boy sits on a chair and read a book."] # optional 
     
-    return {"input_texts": input_texts, "answer_choices_texts": answer_choices_texts, "truths": truths}
+    return {"input_texts": input_texts, "answer_choices_texts": answer_choices_texts, "target_texts": target_texts}
 
 def main():
     model, tokenizer = init_model("google/flan-t5-small")
     data = get_example_data()
-    features = convert_features(tokenizer, data)
+
     
+    features = convert_features(tokenizer, data)
+    # print(len(features["input_ids"]), len(features["labels"]))
     
     data_collator = DataCollatorForMultipleChoice(
                 tokenizer, pad_to_multiple_of=None, padding=True, max_length=64
@@ -97,10 +99,14 @@ def main():
     # batch = data_fomratter(tokenizer, features) 
 
     for batch in eval_dataloader:
+        # for k, v in batch.items():
+        #     print(k, v.shape)
         batch = {
-            k: v.squeeze() if k!="targets" else v.view(1)
+            k: v.view(v.shape[0]*v.shape[1], v.shape[2]) if k!="targets" else v.view(v.shape[1])
             for k, v in batch.items()
         }
         with torch.no_grad():
             predictions, seq_log_prob = model(batch)
             print(predictions) 
+
+main()
