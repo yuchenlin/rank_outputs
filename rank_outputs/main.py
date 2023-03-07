@@ -1,5 +1,5 @@
 from transformers import AutoTokenizer, AutoConfig
-from utils import ModelBase, DataCollatorForMultipleChoice
+from utils import ModelBase, DataCollatorForMultipleChoice, convert_features
 from torch.utils.data import DataLoader
 import torch
 
@@ -14,57 +14,6 @@ def init_model(model_name_or_path="google/flan-t5-small"):
             parallelize=False
         )
     return model, tokenizer
-
-
-def convert_features(tokenizer, data): 
-    input_texts = data["input_texts"]
-    answer_choices_texts = data["answer_choices_texts"]
-    target_texts = data["target_texts"]
-    bs = len(input_texts)
-    padding = "max_length" 
-    max_length = 64
-    
-    tokenized_inputs = tokenizer(
-                input_texts,
-                padding=padding,
-                max_length=max_length,
-                truncation=True,
-                add_special_tokens=False,
-            )
-
-    tokenized_targets = [
-        tokenizer(
-            options,
-            # padding is on the right here.
-            padding=padding,
-            max_length=max_length,
-            truncation=True,
-        )
-        for options in answer_choices_texts
-    ]
-    
-
-    features = {
-                k: [
-                    [elem for _ in range(len(tokenized_targets[idx]["input_ids"]))]
-                    for idx, elem in enumerate(v)
-                ]
-                for k, v in tokenized_inputs.items()
-            }
-
-    features["labels"] = [
-        tokenized_targets[idx]["input_ids"]
-        for idx in range(bs)
-    ]
-    features["labels_attention_mask"] = [
-        tokenized_targets[idx]["attention_mask"]
-        for idx in range(bs)
-    ]
-    features["targets"] = [
-        answer_choices_texts[idx].index(t) if t in answer_choices_texts[idx]  else -1
-        for idx, t in enumerate(target_texts)
-    ]
-    return features
 
 def get_example_data():
     input_texts = [
@@ -114,7 +63,7 @@ def main():
         with torch.no_grad():
             predictions, seq_log_prob = model(batch)
             print(predictions) 
-            print(seq_log_prob)
+            print(seq_log_prob) 
 
 main()
 
