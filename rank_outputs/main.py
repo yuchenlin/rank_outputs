@@ -41,21 +41,15 @@ def main():
     # model, tokenizer = init_model("facebook/bart-base") # TODO(yuchenl): not work yet  
     # model, tokenizer = init_model("bigscience/bloom-560m") # TODO(yuchenl): not work yet  
     
-    data = get_example_data()
-
-    
+    data = get_example_data()    
     features = [convert_features(tokenizer, item) for item in data]
-
-    print(features[0]["labels_attention_mask"])
- 
-    
     data_collator = DataCollatorForMultipleChoice(
                 tokenizer, pad_to_multiple_of=None, padding=True, max_length=64
                 )
     eval_dataloader = DataLoader(features, collate_fn=data_collator, batch_size=1)
+    
+    
     model.eval()
- 
-
     for batch in eval_dataloader: 
         with torch.no_grad():
             predictions, seq_log_prob = model(batch)
