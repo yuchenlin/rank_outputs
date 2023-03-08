@@ -38,9 +38,8 @@ def get_example_data():
 def main():
     model, tokenizer = init_model("google/flan-t5-small")
     # model, tokenizer = init_model("google/flan-t5-base")
-    # model, tokenizer = init_model("facebook/bart-base")
-    
-    # model, tokenizer = init_model("bigscience/bloom-560m") # TODO(yuchenl): not work yet for DecoerOnly Models 
+    # model, tokenizer = init_model("facebook/bart-base") # TODO(yuchenl): not work yet  
+    # model, tokenizer = init_model("bigscience/bloom-560m") # TODO(yuchenl): not work yet  
     
     data = get_example_data()
 
