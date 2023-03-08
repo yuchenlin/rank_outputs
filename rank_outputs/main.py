@@ -27,7 +27,7 @@ def get_example_data():
         ["A boy read chair that sits on a book.", "A boy sits on a chair and read a book.", "A book reads a boy that sits on a chair."], # "placeholder", "placeholder 1"] 
                         # if the number of choices is different, please either use bsz=1 or add some placeholders to make them the same 
     ]
-    target_texts = ["charcoal", "N/A", "A boy sits on a chair and read a book."] # optional 
+    target_texts = ["charcoal", "N/A", "A boy sits on a chair and read a book."] # optional, will not be used for ranking but maybe useful for evaluation
     
     data = []
     for i in range(len(input_texts)):
@@ -37,29 +37,27 @@ def get_example_data():
 
 def main():
     model, tokenizer = init_model("google/flan-t5-small")
+    # model, tokenizer = init_model("google/flan-t5-base")
+    # model, tokenizer = init_model("facebook/bart-base")
+    
+    # model, tokenizer = init_model("bigscience/bloom-560m") # TODO(yuchenl): not work yet for DecoerOnly Models 
+    
     data = get_example_data()
 
     
     features = [convert_features(tokenizer, item) for item in data]
 
-    # print(len(features["input_ids"]), len(features["labels"]))
+    print(features[0]["labels_attention_mask"])
+ 
     
     data_collator = DataCollatorForMultipleChoice(
                 tokenizer, pad_to_multiple_of=None, padding=True, max_length=64
                 )
     eval_dataloader = DataLoader(features, collate_fn=data_collator, batch_size=1)
     model.eval()
+ 
 
-    # features = [features]
-    # batch = data_fomratter(tokenizer, features) 
-
-    for batch in eval_dataloader:
-        # for k, v in batch.items():
-        #     print(k, v.shape)
-        batch = {
-            k: v.view(v.shape[0]*v.shape[1], v.shape[2]) if k!="targets" else v
-            for k, v in batch.items()
-        }
+    for batch in eval_dataloader: 
         with torch.no_grad():
             predictions, seq_log_prob = model(batch)
             print(predictions) 
@@ -68,7 +66,7 @@ def main():
 main()
 
 """"
-Example output: 
+Example output (for t5-small): 
 
 tensor([1])
 tensor([[-30.0734, -12.5917, -18.3455, -19.3478, -13.3692]])

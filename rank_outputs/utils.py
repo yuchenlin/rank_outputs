@@ -148,12 +148,13 @@ class DataCollatorForMultipleChoice:
     pad_to_multiple_of: Optional[int] = None
 
     def __call__(self, features):
-        num_choices = len(features[0]["input_ids"])
-        # print(num_choices)
+        num_choices = len(features[0]["input_ids"][0])
+        # print(features[0]["input_ids"][0])
+        # print(f"num_choices={num_choices}")
         flattened_features = [
             [
                 {
-                    k: v[i]
+                    k: v[0][i]
                     for k, v in feature.items()
                     if k != "targets"
                 }
